@@ -1,55 +1,75 @@
 # Would You Rather?
 
-A no-login, full-screen **red vs blue** choice game. Pick a side first, then reveal the crowd split.
+A zero-login, full-screen **red vs blue** choice game. Pick one side first, then reveal how a historical crowd voted on the same dilemma.
 
 ## V1
 
 - Animated red/blue landing screen
-- 100 original questions
-- Full-screen 50/50 red vs blue layout
-- Responsive mobile top/bottom layout
-- Results stay hidden until a choice is made
+- 100 curated historical Would You Rather polls
+- Real per-option vote counts bundled with every question
+- Percentages calculated directly from those stored counts
+- Full-screen 50/50 red vs blue desktop layout
+- Responsive top/bottom mobile layout
+- Results hidden until the player chooses
 - Animated percentage reveal
-- Vote counts and question progress
 - Randomized question order per session
-- Zero-account experience
+- No login, account, profile, cookies, or vote submission
+- No runtime database or API dependency
 - Reduced-motion support
 
-## Vote integrity
+## Data integrity
 
-The application is designed for real aggregate voting. `config.js` contains the public base URL for an isolated vote API. Until that database is connected, the UI runs in clearly labelled **Preview mode** and stores only real votes made on that browser/device; it never fabricates community percentages.
+V1 is **display-only**. A player's click is not submitted, stored, or added to the historical totals.
 
-For the production crowd-vote backend, each question stores two counters (`red`, `blue`). The frontend submits only:
+Every question in `questions.js` includes:
 
-```json
-{ "questionId": "q001", "choice": "red" }
+```js
+{
+  id: "q001",
+  red: "Choice A",
+  redVotes: 462554,
+  blue: "Choice B",
+  blueVotes: 1121946
+}
 ```
 
-No name, email, profile, or login is required.
+The UI computes percentages only from `redVotes + blueVotes`. It never generates or fabricates a crowd split.
+
+The historical counts were curated from a public CSV mirror of an Either.io question archive:
+
+https://github.com/DaRealTurtyWurty/TurtyAPI/blob/b6e209dfb2d5a2d934cc6c48c27c039086b0fa85/src/main/resources/wyr/would_you_rathers.csv
+
+Question wording in this project is lightly normalized for spelling/readability while preserving the original choice meaning. The vote counts remain the historical snapshot attached to those choices.
+
+## Architecture
+
+V1 is intentionally static:
+
+- `index.html` — app shell
+- `styles.css` — responsive red/blue UI and animations
+- `questions.js` — 100 curated polls + historical counts
+- `app.js` — session shuffle, choice reveal, percentage calculation
+- `vercel.json` — static hosting/security headers
+- `tools/check.mjs` — data and source-integrity validation
+
+No Supabase schema is required for this release. If a future release needs persistent app data, it should follow the existing shared Project Hub isolation model rather than creating a dedicated Supabase project.
 
 ## Run locally
 
-No build step is required:
+No dependencies or build step are required.
 
 ```bash
 python -m http.server 4173
 ```
 
-Then open `http://localhost:4173`.
+Open `http://localhost:4173`.
 
-## Files
+Validation:
 
-- `index.html` — app shell
-- `styles.css` — responsive red/blue UI and animations
-- `questions.js` — 100 original V1 prompts
-- `app.js` — game loop, voting adapter, result animation
-- `config.js` — isolated vote API URL
-- `vercel.json` — static hosting/security headers
-
-## Data source policy
-
-The project does **not** copy question banks or pretend generated numbers are historical votes. Community percentages will be calculated from records created by actual players of this game.
+```bash
+npm run check
+```
 
 ## Roadmap
 
-V1 is intentionally basic. Future releases can add categories, streaks, sharing, daily questions, country splits, and richer result analytics.
+V1 stays deliberately basic. Future releases can add categories, streaks, sharing, daily questions, filters, or refreshed historical datasets without changing the core two-choice experience.
