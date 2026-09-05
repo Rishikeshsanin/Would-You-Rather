@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
-const files = ['index.html','styles.css','questions.js','app.js','config.js','vercel.json'];
+const files = ['index.html','styles.css','questions.js','app.js','config.js','vercel.json','api/vote.js','supabase/schema.sql'];
 for (const file of files) if (!fs.existsSync(file)) throw new Error(`Missing ${file}`);
 const context = { window: {} };
 vm.createContext(context);
@@ -11,7 +11,8 @@ if (new Set(qs.map(q => q.id)).size !== 100) throw new Error('Question IDs are n
 for (const q of qs) if (!q.red?.trim() || !q.blue?.trim()) throw new Error(`Incomplete question ${q.id}`);
 JSON.parse(fs.readFileSync('vercel.json','utf8'));
 new Function(fs.readFileSync('app.js','utf8'));
+new Function('module','process','fetch',fs.readFileSync('api/vote.js','utf8'));
 console.log('✓ 100 unique questions');
-console.log('✓ JavaScript parses');
+console.log('✓ Frontend and vote API JavaScript parse');
 console.log('✓ Vercel config parses');
-console.log('✓ Required files present');
+console.log('✓ Vote schema and required files present');
