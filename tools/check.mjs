@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+const files = ['index.html','styles.css','questions.js','app.js','config.js','vercel.json'];
+for (const file of files) if (!fs.existsSync(file)) throw new Error(`Missing ${file}`);
+const context = { window: {} };
+vm.createContext(context);
+vm.runInContext(fs.readFileSync('questions.js','utf8'), context);
+const qs = context.window.WYR_QUESTIONS;
+if (!Array.isArray(qs) || qs.length !== 100) throw new Error(`Expected 100 questions, got ${qs?.length}`);
+if (new Set(qs.map(q => q.id)).size !== 100) throw new Error('Question IDs are not unique');
+for (const q of qs) if (!q.red?.trim() || !q.blue?.trim()) throw new Error(`Incomplete question ${q.id}`);
+JSON.parse(fs.readFileSync('vercel.json','utf8'));
+new Function(fs.readFileSync('app.js','utf8'));
+console.log('✓ 100 unique questions');
+console.log('✓ JavaScript parses');
+console.log('✓ Vercel config parses');
+console.log('✓ Required files present');
