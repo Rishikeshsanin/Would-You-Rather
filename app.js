@@ -17,6 +17,20 @@
     return a;
   };
 
+  function voterToken() {
+    const key = 'wyr-voter-token';
+    try {
+      let token = localStorage.getItem(key);
+      if (!token) {
+        token = crypto.randomUUID();
+        localStorage.setItem(key, token);
+      }
+      return token;
+    } catch {
+      return crypto.randomUUID();
+    }
+  }
+
   function home() {
     app.innerHTML = `
       <main class="home">
@@ -54,7 +68,7 @@
       const response = await fetch(`${API}/vote`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ questionId, choice: side })
+        body: JSON.stringify({ questionId, choice: side, voterToken: voterToken() })
       });
       if (!response.ok) throw new Error('Vote service unavailable');
       return response.json();
